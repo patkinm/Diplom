@@ -42,24 +42,39 @@ namespace SelfDrivingCar
         {
             int i = ((MouseEventArgs)e).Y / map.SquareSize;
             int j = ((MouseEventArgs)e).X / map.SquareSize;
-            map[j, i].IsObstacle = true;
 
-            setObstacle(i, j);
+            if (map[j, i].IsObstacle)
+            {
+                setObstacle(i, j, false);
+            }
+            else
+            {
+                setObstacle(i, j, true);
+            }
+            
         }
 
-        private void setObstacle(int x, int y)
+        private void setObstacle(int x, int y, bool obstacle)
         {
             Bitmap bmp = (Bitmap) worldMap.Image;
-
-            for (int i = 0; i < map.SquareSize; i++)
+            map[y, x].IsObstacle = obstacle;
+            for (int i = 1; i < map.SquareSize; i++)
             {
-                for (int j = 0; j < map.SquareSize; j++)
+                for (int j = 1; j < map.SquareSize; j++)
                 {
-                    bmp.SetPixel(y * map.SquareSize + j, x * map.SquareSize + i, Color.Black);
+                    if(obstacle)
+                    {
+                        bmp.SetPixel(y * map.SquareSize + j, x * map.SquareSize + i, Color.Black);
+                    }
+                    else
+                    {
+                        bmp.SetPixel(y * map.SquareSize + j, x * map.SquareSize + i, Color.White);
+                    }
                 }
             }
 
             worldMap.Image = bmp;
         }
+
     }
 }
