@@ -7,7 +7,7 @@ namespace SelfDrivingCar
 {
     class Map
     {
-        private const int SQUARE_SIZE = 50;
+        public static int SQUARE_SIZE = 50;
         private int width;
         private int height;
         private WorldElement[,] worldElements;

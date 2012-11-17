@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace SelfDrivingCar
 {
@@ -25,7 +26,7 @@ namespace SelfDrivingCar
         private void initWorldMap()
         {
             Bitmap bmp = new Bitmap(GRID_WIDTH * map.SquareSize + 1, GRID_HEIGHT * map.SquareSize + 1);
-            for (int i = 0; i < worldMap.Size.Width; i++)
+            /*for (int i = 0; i < worldMap.Size.Width; i++)
             {
                 for (int j = 0; j < worldMap.Size.Height; j++)
                 {
@@ -34,7 +35,7 @@ namespace SelfDrivingCar
                         bmp.SetPixel(i, j, Color.Black);
                     }
                 }
-            }
+            }*/
             worldMap.Image = bmp;
         }
 
@@ -76,5 +77,28 @@ namespace SelfDrivingCar
             worldMap.Image = bmp;
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private Graphics createGraphics()
+        {
+            return worldMap.CreateGraphics();
+        }
+
+        private void moveCar()
+        {
+            Car car = new Car(createGraphics());
+            while (car.needDraw())
+            {
+                car.move();
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            new Thread(new ThreadStart(moveCar)).Start();
+        }
     }
 }
