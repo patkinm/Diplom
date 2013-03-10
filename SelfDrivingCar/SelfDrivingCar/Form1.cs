@@ -15,16 +15,18 @@ namespace SelfDrivingCar
         private const int GRID_WIDTH = 15;
         private const int GRID_HEIGHT = 10;
         private Map map;
+        private Thread carThread;
+        private Bitmap mapBmp;
 
         public Form1()
         {
             InitializeComponent();
-            map = new Map(GRID_WIDTH, GRID_HEIGHT);
             initWorldMap();
         }
 
         private void initWorldMap()
         {
+            map = new Map(GRID_WIDTH, GRID_HEIGHT);
             Bitmap bmp = new Bitmap(GRID_WIDTH * map.SquareSize + 1, GRID_HEIGHT * map.SquareSize + 1);
             /*for (int i = 0; i < worldMap.Size.Width; i++)
             {
@@ -37,6 +39,10 @@ namespace SelfDrivingCar
                 }
             }*/
             worldMap.Image = bmp;
+            carThread = new Thread(new ThreadStart(moveCar));
+            carThread.IsBackground = true;
+            pictureBox1.Image = null;
+            mapBmp = new Bitmap(GRID_WIDTH + 2, GRID_HEIGHT + 2);
         }
 
         private void worldMap_Click(object sender, EventArgs e)
@@ -89,16 +95,58 @@ namespace SelfDrivingCar
 
         private void moveCar()
         {
-            Car car = new Car(createGraphics());
-            while (car.needDraw())
-            {
-                car.move();
-            }
+            CurrentPosition pos = new CurrentPosition();
+            Car car = new Car(createGraphics(), createGraphics(), map, pos, mapBmp);
+            constructMap();
         }
 
+        
         private void button1_Click(object sender, EventArgs e)
         {
-            new Thread(new ThreadStart(moveCar)).Start();
+            String portName = comPortName.Text;
+            int portRate = int.Parse(comPortRate.Text);
+            Communicator communicator = new Communicator(portName, portRate);
+            carThread.Start();
+            startCar.Enabled = false;
+            stopCar.Enabled = true;
+        }
+
+        private void stopCar_Click(object sender, EventArgs e)
+        {
+            carThread.Suspend();
+            constructMap();
+        }
+
+        private void refresh_Click(object sender, EventArgs e)
+        {
+            initWorldMap();
+            stopCar.Enabled = false;
+            startCar.Enabled = true;
+        }
+
+        private void constructMap()
+        {
+            Bitmap result = new Bitmap(mapBmp.Width * 4, mapBmp.Height * 4);
+            for (int i = 0; i < mapBmp.Width; i++)
+            {
+                for (int j = 0; j < mapBmp.Height; j++)
+                {
+                    for (int ii = 0; ii < 4; ii++)
+                    {
+                        for (int jj = 0; jj < 4; jj++)
+                        {
+                            result.SetPixel(result.Width - 1 - (4 * i + ii), result.Height - 1 - (4 * j + jj), mapBmp.GetPixel(i, j));
+                        }
+                    }
+                }
+            }
+
+            Bitmap bmp2Scale = new Bitmap(400, 400);
+            using (Graphics graphics = Graphics.FromImage(bmp2Scale))
+            {
+                graphics.DrawImage(result, new Rectangle(0, 0, bmp2Scale.Width, bmp2Scale.Height));
+            }
+            pictureBox1.Image = bmp2Scale;
         }
     }
 }
